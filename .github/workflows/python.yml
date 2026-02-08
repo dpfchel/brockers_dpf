@@ -20,7 +20,7 @@ jobs:
         poetry self add poetry-plugin-shell
         source ~/.bashrc
         poetry shell
-        poetry install
+        poetry install --no-interaction
 
     - name: Run tests
       run: |
