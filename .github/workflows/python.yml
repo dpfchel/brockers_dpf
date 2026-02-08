@@ -21,6 +21,8 @@ jobs:
         source ~/.bashrc
         poetry install --no-interaction
         poetry env activate
+        source /home/runner/.cache/pypoetry/virtualenvs/brockers-dpf-WoBIQW_g-py3.13/bin/activate
+        ls -l
 
     - name: Run tests
       run: |
