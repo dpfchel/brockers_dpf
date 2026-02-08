@@ -1,9 +1,5 @@
-import json
 import time
 import uuid
-
-from httpx import request
-
 from framework.internal.http.account import AccountApi
 from framework.internal.http.mail import MailApi
 from framework.internal.kafka.producer import Producer
@@ -40,7 +36,6 @@ def test_success_registration_with_kafka_producer(mail: MailApi, kafka_producer:
         "email": f"{base}@mail.ru",
         "password": "123123123",
     }
-
     kafka_producer.send("register-events", message)
     for _ in range(10):
         response = mail.find_message(query=base)

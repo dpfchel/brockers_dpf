@@ -5,6 +5,7 @@ from framework.internal.http.mail import MailApi
 from framework.internal.kafka.producer import Producer
 
 
+
 @pytest.fixture(scope="session")
 def account() -> AccountApi:
     return AccountApi()

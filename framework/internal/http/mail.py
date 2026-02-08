@@ -2,7 +2,7 @@ import httpx
 
 
 
-class MailApi:
+class MailApi():
 
     def __init__(self, base_url: str="http://185.185.143.231:8085") -> None:
         self._base_url = base_url

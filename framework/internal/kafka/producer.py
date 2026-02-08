@@ -2,26 +2,25 @@ import threading
 from kafka import KafkaProducer
 import json
 from types import TracebackType
+from framework.internal.singleton import Singleton
 
 
-class Producer:
+class Producer(Singleton):
     def __init__(self, bootstrap_servers: list[str] = ["185.185.143.231:9092"]):
         self._bootstrap_servers = bootstrap_servers
         self._producer: KafkaProducer | None=None
         self._lock: threading.Lock = threading.Lock()
 
     def start(self) -> None:
-        self._producer = KafkaProducer(
-        bootstrap_servers=self._bootstrap_servers,
-        value_serializer=lambda x: json.dumps(x).encode("utf-8"),
-        acks="all",
-        retries=5,
-        retry_backoff_ms=5000,
-        request_timeout_ms=7000,
-        connections_max_idle_ms=60000,
-        reconnect_backoff_ms=5000,
-        reconnect_backoff_max_ms=10000,
-    )
+        self._producer = KafkaProducer(bootstrap_servers=self._bootstrap_servers,
+                                       value_serializer=lambda x: json.dumps(x).encode("utf-8"),
+                                       acks="all",
+                                       retries=5,
+                                       retry_backoff_ms=5000,
+                                       request_timeout_ms=70000,
+                                       connections_max_idle_ms=65000,
+                                       reconnect_backoff_ms=5000,
+                                       reconnect_backoff_max_ms=10000)
 
     def stop(self) -> None:
         if self._producer:
@@ -41,17 +40,11 @@ class Producer:
             raise RuntimeError(f"Failed to send message to Kafka: {e}")
 
 
-
     def __enter__(self) -> "Producer":
         self.start()
         return self
 
-    def __exit__(
-            self,
-            exc_type: type[BaseException],
-            exc_val: BaseException | None,
-            exc_tb: TracebackType | None,
-    ) -> None:
+    def __exit__( self, exc_type: type[BaseException], exc_val: BaseException | None, exc_tb: TracebackType | None, ) -> None:
         self.stop()
 
 
