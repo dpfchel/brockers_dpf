@@ -18,10 +18,10 @@ jobs:
         curl -sSL https://install.python-poetry.org | PYTHON=python3 python3 -
         export PATH="$HOME/.local/bin:$PATH"
         source ~/.bashrc
-        poetry --version
+        poetry shell
         poetry install
 
     - name: Run tests
       run: |
-        python -m pytest tests/test_registration.py        
+        pytest ${PWD}/tests/test_registration.py        
 
