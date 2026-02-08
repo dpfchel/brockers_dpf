@@ -23,7 +23,7 @@ jobs:
         poetry env activate
         source /home/runner/.cache/pypoetry/virtualenvs/brockers-dpf-WoBIQW_g-py3.13/bin/activate
         ls -l
-        pytest ./tests
+        pytest /home/runner/work/brockers_dpf/brockers_dpf/tests/tests
 
 
         
