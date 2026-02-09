@@ -34,6 +34,7 @@ jobs:
       run: |
         ls -l
         pwd
+        echo $PYTHONPATH
         poetry run pytest tests/
               
         
