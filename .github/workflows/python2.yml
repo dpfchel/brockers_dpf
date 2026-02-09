@@ -1,5 +1,4 @@
-
-name: Python Tests (v2)
+name: Python Tests (poetry from Github)
 on: [ push, pull_request ]
 jobs:
   test:
@@ -11,19 +10,10 @@ jobs:
       uses: actions/setup-python@v4
       with:
         python-version: '3.13'
-
     - uses: snok/install-poetry@v1
     - name: Install Poetry
       run: |
         poetry install --no-interaction
     - name: Tests
       run: |
-        ls -l
-        pwd
-        echo $PYTHONPATH
         poetry run pytest ./tests/
-
-
-
-
-
