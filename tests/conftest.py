@@ -1,7 +1,7 @@
 import pytest
-from src.framework.internal.http.account import AccountApi
-from src.framework.internal.http.mail import MailApi
-from src.framework.internal.kafka.producer import Producer
+from src.brockers_dpf.framework.internal.http.account import AccountApi
+from src.brockers_dpf.framework.internal.http.mail import MailApi
+from src.brockers_dpf.framework.internal.kafka.producer import Producer
 
 
 
