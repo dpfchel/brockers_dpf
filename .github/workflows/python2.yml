@@ -1,0 +1,29 @@
+
+name: Python Tests (v2)
+on: [ push, pull_request ]
+jobs:
+  test:
+    name: Python tests
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.13'
+
+    - uses: snok/install-poetry@v1
+    - name: Install Poetry
+      run: |
+        poetry install --no-interaction
+    - name: Tests
+      run: |
+        ls -l
+        pwd
+        echo $PYTHONPATH
+        poetry run pytest ./tests/
+
+
+
+
+
