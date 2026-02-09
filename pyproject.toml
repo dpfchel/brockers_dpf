@@ -16,10 +16,6 @@ dependencies = [
 [tool.poetry]
 packages = [{include = "brockers_dpf", from = "src"}]
 
-[tool.poetry.dependencies]
-account = {path = "framework/internal/http/", develop = true}
-mail = {path = "framework/internal/http/", develop = true}
-producer = {path = "framework/internal/kafka/", develop = true}
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
