@@ -35,7 +35,7 @@ jobs:
         ls -l
         pwd
         echo $PYTHONPATH
-        poetry run pytest tests/
+        poetry run pytest ./tests/
               
         
       #  poetry self add poetry-plugin-shell
