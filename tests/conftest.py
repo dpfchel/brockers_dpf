@@ -1,7 +1,7 @@
 import pytest
-from framework.internal.http.account import AccountApi
-from framework.internal.http.mail import MailApi
-from framework.internal.kafka.producer import Producer
+from src.framework.internal.http.account import AccountApi
+from src.framework.internal.http.mail import MailApi
+from src.framework.internal.kafka.producer import Producer
 
 
 

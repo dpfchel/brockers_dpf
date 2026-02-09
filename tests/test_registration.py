@@ -1,9 +1,9 @@
 import json
 import time
 import uuid
-from framework.internal.http.account import AccountApi
-from framework.internal.http.mail import MailApi
-from framework.internal.kafka.producer import Producer
+from src.framework.internal.http.account import AccountApi
+from src.framework.internal.http.mail import MailApi
+from src.framework.internal.kafka.producer import Producer
 
 
 def test_failed_registration(account: AccountApi, mail: MailApi) -> None:
