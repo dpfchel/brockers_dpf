@@ -16,15 +16,10 @@ dependencies = [
 [tool.poetry]
 packages = [{include = "brockers_dpf", from = "src"}]
 
-[tool.poetry.dependencies]
-account = {path = "../framework.internal.http.account", develop = true}
-mail = {path = "../framework.internal.http.mail", develop = true}
-producer = {path = "../framework.internal.kafka.producer", develop = true}
-
-для импортов:
-from framework.internal.http.account import AccountApi
-from framework.internal.http.mail import MailApi
-from framework.internal.kafka.producer import Producer
+#[tool.poetry.dependencies]
+#account = {path = "../framework.internal.http.account", develop = true}
+#mail = {path = "../framework.internal.http.mail", develop = true}
+#producer = {path = "../framework.internal.kafka.producer", develop = true}
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
