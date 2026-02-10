@@ -1,15 +1,19 @@
 import json
 import threading
 import time
+import queue
+from queue import Queue
 
 from kafka import KafkaConsumer
+
+q = queue.Queue()
 
 #class
 def consume_message():
     consumer = KafkaConsumer(
         "register-events",
         bootstrap_servers=["185.185.143.231:9092"],
-        auto_offset_reset='earliest',
+        auto_offset_reset='latest',
         value_deserializer=lambda x: json.loads(x.decode("utf-8")),
     )
     try:
@@ -18,7 +22,7 @@ def consume_message():
                 login_from_message = message.value["login"]
             except Exception as er:
                 login_from_message = f"{er}"
-
+            q.put(message)
             print(login_from_message)
     except Exception as e:
         print( f"Error {e}")
@@ -27,6 +31,16 @@ def consume_message():
 
 thread = threading.Thread(target=consume_message, daemon=True)
 thread.start()
-time.sleep(5)
-#consume_message()
+time.sleep(1)
+
+
+def get_message(timeout=90):
+    try:
+        return q.get(timeout=timeout)
+    except queue.Empty:
+        raise AssertionError("Queue is empty")
+
+print(q.qsize())
+print(get_message())
 print("STOP")
+print(q.qsize())
