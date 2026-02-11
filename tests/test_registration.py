@@ -2,11 +2,11 @@ import json
 import time
 import uuid
 
-from src.brockers_dpf.framework.internal.kafka.consumer import Consumer
+from src.brockers_dpf.framework.helpers.kafka.consumers.register_events import RegisterEventsSubscriber
 from src.brockers_dpf.framework.internal.http.account import AccountApi
 from src.brockers_dpf.framework.internal.http.mail import MailApi
 from src.brockers_dpf.framework.internal.kafka.producer import Producer
-from kafka import KafkaConsumer
+
 
 
 def test_failed_registration(account: AccountApi, mail: MailApi) -> None:
@@ -91,7 +91,7 @@ def test_register_events_error_consumer(account: AccountApi, mail: MailApi, kafk
 
 
 def test_success_registration_with_kafka_producer_consumer(
-        kafka_consumer: Consumer,
+        register_events_subscriber: RegisterEventsSubscriber,
         kafka_producer: Producer
 ) -> None:
     base = uuid.uuid4().hex
@@ -104,7 +104,7 @@ def test_success_registration_with_kafka_producer_consumer(
     kafka_producer.send("register-events", message)
 
     for i in range(10):
-        message = kafka_consumer.get_message()
+        message = register_events_subscriber.get_message()
         try:                                                # Падали на:  # ConsumerRecord(topic='register-events', partition=0, leader_epoch=0, offset=770, timestamp=1770579596298, timestamp_type=0, key=None, value={'input_data': {'login': 'd8176fe0613048a3a73a7efbff4c47a4', 'email': 'd8176fe0613048a3a73a7efbff4c47a4@mail.ru', 'password': '123123123'}, 'error_message': {'type': 'https://tools.ietf.org/html/rfc7231#section-6.5.1', 'title': 'Validation failed', 'status': 400, 'traceId': '00-2bd2ede7c3e4dcf40c4b7a62ac23f448-839ff284720ea656-01', 'errors': {'Email': ['Invalid']}}, 'error_type': 'unknown'}, headers=[], checksum=None, serialized_key_size=-1, serialized_value_size=393, serialized_header_size=-1)
             login_from_message = message.value["login"]
         except Exception:
