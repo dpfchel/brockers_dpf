@@ -20,4 +20,4 @@ jobs:
         poetry install --no-interaction
     - name: Tests
       run: |
-        poetry run pytest ./tests/
+        poetry run pytest -v ./tests/
