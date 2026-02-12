@@ -2,10 +2,23 @@ import json
 import time
 import uuid
 
+import pytest
+
 from src.brockers_dpf.framework.helpers.kafka.consumers.register_events import RegisterEventsSubscriber
 from src.brockers_dpf.framework.internal.http.account import AccountApi
 from src.brockers_dpf.framework.internal.http.mail import MailApi
 from src.brockers_dpf.framework.internal.kafka.producer import Producer
+
+
+@pytest.fixture
+def register_message() -> dict[str, str]:
+    base = uuid.uuid4().hex
+    return {
+        "login": base,
+        "email": f"{base}@mail.ru",
+        "password": "123123123",
+    }
+
 
 
 
@@ -33,16 +46,16 @@ def test_success_registration(account: AccountApi, mail: MailApi) -> None:
 
 
 
-def test_success_registration_with_kafka_producer(mail: MailApi, kafka_producer: Producer) -> None:
-    base = uuid.uuid4().hex
-    message = {
-        "login": base,
-        "email": f"{base}@mail.ru",
-        "password": "123123123",
-    }
-    kafka_producer.send("register-events", message)
+def test_success_registration_with_kafka_producer(
+        register_message: dict[str, str],
+        mail: MailApi,
+        kafka_producer: Producer
+) -> None:
+    login = register_message["login"]
+
+    kafka_producer.send("register-events", register_message)
     for _ in range(10):
-        response = mail.find_message(query=base)
+        response = mail.find_message(query=login)
         if response.json()["total"] > 0:
             break
         time.sleep(1)
@@ -100,19 +113,10 @@ def test_success_registration_with_kafka_producer_consumer(
         "email": f"{base}@mail.ru",
         "password": "123123123",
     }
-
     kafka_producer.send("register-events", message)
-
     for i in range(10):
         message = register_events_subscriber.get_message()
-        try:                                                # Падали на:  # ConsumerRecord(topic='register-events', partition=0, leader_epoch=0, offset=770, timestamp=1770579596298, timestamp_type=0, key=None, value={'input_data': {'login': 'd8176fe0613048a3a73a7efbff4c47a4', 'email': 'd8176fe0613048a3a73a7efbff4c47a4@mail.ru', 'password': '123123123'}, 'error_message': {'type': 'https://tools.ietf.org/html/rfc7231#section-6.5.1', 'title': 'Validation failed', 'status': 400, 'traceId': '00-2bd2ede7c3e4dcf40c4b7a62ac23f448-839ff284720ea656-01', 'errors': {'Email': ['Invalid']}}, 'error_type': 'unknown'}, headers=[], checksum=None, serialized_key_size=-1, serialized_value_size=393, serialized_header_size=-1)
-            login_from_message = message.value["login"]
-        except Exception:
-            try:
-                login_from_message = message.value["value"]["input_data"]["login"]
-            except Exception:
-                login_from_message = ''
-
+        login_from_message = message.value["login"]
         if login_from_message == base:
             break
     else:
@@ -120,3 +124,27 @@ def test_success_registration_with_kafka_producer_consumer(
 
 
 
+# 12- 1
+
+def test_success_registration_12(
+        register_events_subscriber: RegisterEventsSubscriber,
+        register_message: dict[str, str],
+        account: AccountApi,
+        mail: MailApi,
+) -> None:
+
+    login = register_message["login"]
+    account.register_user(**register_message)
+
+    message = register_events_subscriber.get_message()
+    login_from_message = message.value["login"]
+
+    assert login_from_message == login
+
+    for _ in range(10):
+        response = mail.find_message(query=login)
+        if response.json()["total"] > 0:
+            break
+        time.sleep(1)
+    else:
+        raise AssertionError("Email not found")
