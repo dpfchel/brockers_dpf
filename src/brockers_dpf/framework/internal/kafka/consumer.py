@@ -12,6 +12,7 @@ from src.brockers_dpf.framework.internal.kafka.subscriber import Subscriber
 class Consumer(Singleton):
     _started: bool = False
 
+
     def __init__(self, subscribers: list[Subscriber], bootstrap_servers=["185.185.143.231:9092"]
                  ):
         self._bootstrap_servers = bootstrap_servers
@@ -23,6 +24,7 @@ class Consumer(Singleton):
         self._subscribers = subscribers
         self._watchers: dict[str, list[Subscriber]] = defaultdict(list)
 
+
     def register(self):
         if self._subscribers is None:
             raise RuntimeError("Subscribers is not initialized")
@@ -30,8 +32,9 @@ class Consumer(Singleton):
             raise RuntimeError("Consumer is already started")
 
         for subscriber in self._subscribers:
-            print(f"Reistering subsciber {subscriber.topic}")
+            print(f"Registering subsciber {subscriber.topic}")
             self._watchers[subscriber.topic].append(subscriber)
+
 
     def start(self):
         self._consumer = KafkaConsumer(
@@ -50,6 +53,7 @@ class Consumer(Singleton):
 
         self._started = True
 
+
     def _consume(self):
         self._ready.set()
         print("Consumer started")
@@ -67,13 +71,6 @@ class Consumer(Singleton):
                     time.sleep(0.1)
         except Exception as e:
             print(f"Error {e}")
-
-
-#    def get_message(self, timeout=90):            # убрано в 11_2
-#        try:
-#            return self._messages.get(timeout=timeout)
-#        except queue.Empty:
-#            raise AssertionError("Queue is empty")
 
 
     def stop(self):
