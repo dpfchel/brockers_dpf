@@ -151,16 +151,12 @@ def test_success_registration_12(
 
 
 # Задания - вторая неделя
-
-
 def test_invalid_data_to_error_type_validation(
         register_events_subscriber: RegisterEventsSubscriber,
         register_events_subscriber_error: RegisterEventsSubscriberError,
         account: AccountApi,
 ) -> None:
-    """
-    Задание 2.1
-    E2E тест
+    """  Задание 2.1
     - Запускаем асинхронную регистрацию с невалидными данными через Register API
     - Проверям, что сообщение попало в топик register-events
     - Проверяем, что сообщение попало в топик register-events-error с типом ошибки validation
@@ -189,12 +185,10 @@ def test_invalid_data_to_error_type_validation(
         error_type = message_from_error_value["error_type"]
 
         if login == message_invalid["login"] and email == message_invalid["email"]:
-            # Сообщение найдено в топике "register-events-errors"
             if error_type != 'validation':
                 raise AssertionError("В топике register-events-errors: error_type не validation ")
             if error_type == 'validation':
-                # Сообщение найдено в топике "register-events-errors" и error_type = 'validation'
-                flag_is_ok = 1
+                flag_is_ok = 1           # ФР = ОР, тест выполнен
                 break
 
     if flag_is_ok != 1:
@@ -261,7 +255,7 @@ def test_invalid_data_with_error_type_unknown_to_error_type_validation(
             if error_type != 'validation' and case == 2:
                 raise AssertionError(f"В топике register-events-errors на шаге 1: error_type не validation, step {i}, case {case}, {error_type} ")
             if error_type == 'validation' and case == 2:
-                flag_is_ok = 1
+                flag_is_ok = 1                                      # ФР = ОР, тест выполнен
                 break
 
     if flag_is_ok != 1:
