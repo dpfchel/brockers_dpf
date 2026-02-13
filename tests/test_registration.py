@@ -251,9 +251,11 @@ def test_invalid_data_with_error_type_unknown_to_error_type_validation(
         if login == login_message_incorrect and email == email_message_incorrect:
             case += 1
             if error_type != 'unknown' and case == 1:
-                raise AssertionError(f"В топике register-events-errors на шаге 0: error_type не unknown, step {i}, case {case}, {error_type}")
+                raise AssertionError(
+                    f"В register-events-errors на шаге 0: error_type не unknown, step {i}, case {case}, {error_type}")
             if error_type != 'validation' and case == 2:
-                raise AssertionError(f"В топике register-events-errors на шаге 1: error_type не validation, step {i}, case {case}, {error_type} ")
+                raise AssertionError(
+                    f"В register-events-errors на шаге 1: error_type не validation, step {i}, case {case}, {error_type}")
             if error_type == 'validation' and case == 2:
                 flag_is_ok = 1                                      # ФР = ОР, тест выполнен
                 break
