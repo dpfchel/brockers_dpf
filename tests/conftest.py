@@ -2,6 +2,7 @@ from typing import Generator
 
 import pytest
 
+from src.brockers_dpf.framework.internal.rmq.publisher import RmqPublisher
 from src.brockers_dpf.framework.helpers.kafka.consumers.register_events_errors import RegisterEventsSubscriberError
 from src.brockers_dpf.framework.helpers.kafka.consumers.register_events import RegisterEventsSubscriber
 from src.brockers_dpf.framework.internal.kafka.consumer import Consumer
@@ -54,3 +55,9 @@ def clear_topic_register_events_errors(register_events_subscriber_error) -> None
     result = 1
     while result != None:
         result = register_events_subscriber_error.get_message(timeout=2)
+
+
+@pytest.fixture(scope="session")
+def rmq_publisher() -> Generator[RmqPublisher]:
+    with RmqPublisher() as publisher:
+        yield publisher

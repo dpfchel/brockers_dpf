@@ -2,7 +2,9 @@ import json
 import time
 import uuid
 import pytest
+import pika
 
+from brockers_dpf.framework.internal.rmq.publisher import RmqPublisher
 from src.brockers_dpf.framework.helpers.kafka.consumers.register_events import RegisterEventsSubscriber
 from src.brockers_dpf.framework.helpers.kafka.consumers.register_events_errors import RegisterEventsSubscriberError
 
@@ -248,3 +250,16 @@ def test_invalid_data_with_error_type_unknown_to_error_type_validation(
             assert error_type == 'unknown', f"В register-events-errors на шаге 0: error_type не unknown, step {i}, {error_type}"
         if i == 1:
             assert error_type == 'validation', f"В register-events-errors на шаге 1: error_type не validation, step {i}, {error_type}"
+
+
+
+def test_rmq(rmq_publisher: RmqPublisher) -> None:
+    address = f"{uuid.uuid4().hex}@mail.ru"
+    message = {
+        "address": address,
+        "subject": "Test message",
+        "body":  "Test message",
+    }
+    #rmq_publisher.publish("dm.mail.sending", message=message)
+    print(rmq_publisher)
+    rmq_publisher.publish("dm.mail.sending", message)
