@@ -3,8 +3,8 @@ import time
 import uuid
 import pytest
 
-from src.brockers_dpf.framework.helpers.kafka.consumers.register_events import (
-    RegisterEventsSubscriber, RegisterEventsSubscriberError)
+from src.brockers_dpf.framework.helpers.kafka.consumers.register_events import RegisterEventsSubscriber
+from src.brockers_dpf.framework.helpers.kafka.consumers.register_events_errors import RegisterEventsSubscriberError
 
 from src.brockers_dpf.framework.internal.http.account import AccountApi
 from src.brockers_dpf.framework.internal.http.mail import MailApi
@@ -150,7 +150,7 @@ def test_success_registration_12(
 
 
 
-# Задания - вторая неделя
+# Задания - вторая неделя    # clear_topic_register_events_errors,
 def test_invalid_data_to_error_type_validation(
         register_events_subscriber: RegisterEventsSubscriber,
         register_events_subscriber_error: RegisterEventsSubscriberError,
@@ -175,24 +175,18 @@ def test_invalid_data_to_error_type_validation(
         raise AssertionError("В топике register-events не совпал email ")
 
     #topic: "register-events-errors"
-    flag_is_ok = 0
-    for i in range(10):
-        message_from_error = register_events_subscriber_error.get_message()
-        message_from_error_value = message_from_error.value
-        message_from_error_value_input_data = message_from_error_value["input_data"]
-        login = message_from_error_value_input_data["login"]
-        email = message_from_error_value_input_data["email"]
-        error_type = message_from_error_value["error_type"]
 
-        if login == message_invalid["login"] and email == message_invalid["email"]:
-            if error_type != 'validation':
-                raise AssertionError("В топике register-events-errors: error_type не validation ")
-            if error_type == 'validation':
-                flag_is_ok = 1           # ФР = ОР, тест выполнен
-                break
+    message_from_error = register_events_subscriber_error.get_message_find(message_invalid["email"])
+    message_from_error_value = message_from_error.value
+    message_from_error_value_input_data = message_from_error_value["input_data"]
+    login = message_from_error_value_input_data["login"]
+    email = message_from_error_value_input_data["email"]
+    error_type = message_from_error_value["error_type"]
 
-    if flag_is_ok != 1:
-        raise AssertionError("Сообщение не найдено в топике register-events-errors")
+    if login != message_invalid["login"] or email != message_invalid["email"]:
+        raise AssertionError("В топике register-events-errors: не совпали логин или емайл ")
+    assert error_type == 'validation', "В топике register-events-errors: error_type не validation "
+
 
 
 
@@ -207,7 +201,6 @@ def test_invalid_data_with_error_type_unknown_to_error_type_validation(
      - проверить, что сообщение повторно попадет в топик  register-events-error , но уже с типом ошибки "validation"
      - т.е. Принимаем 2 сообщения: первое с типом ошибки "unknown", второе с типом ошибки "validation"
     """
-
     message_incorrect = {
         'input_data': {
             'login': '2',
@@ -240,25 +233,18 @@ def test_invalid_data_with_error_type_unknown_to_error_type_validation(
     #topic: "register-events-errors"
     flag_is_ok = 0
     case = 0              # количество сообщений с тестовыми логином и емайлом
-    for i in range(10):
-        message_from_topic_error = register_events_subscriber_error.get_message()
+    for i in range(2):
+        message_from_topic_error = register_events_subscriber_error.get_message_find(email_message_incorrect)
         message_from_topic_error_value = message_from_topic_error.value
         message_from_topic_error_value_input_data = message_from_topic_error_value["input_data"]
         login = message_from_topic_error_value_input_data["login"]
         email = message_from_topic_error_value_input_data["email"]
         error_type = message_from_topic_error_value["error_type"]
 
-        if login == login_message_incorrect and email == email_message_incorrect:
-            case += 1
-            if error_type != 'unknown' and case == 1:
-                raise AssertionError(
-                    f"В register-events-errors на шаге 0: error_type не unknown, step {i}, case {case}, {error_type}")
-            if error_type != 'validation' and case == 2:
-                raise AssertionError(
-                    f"В register-events-errors на шаге 1: error_type не validation, step {i}, case {case}, {error_type}")
-            if error_type == 'validation' and case == 2:
-                flag_is_ok = 1                                      # ФР = ОР, тест выполнен
-                break
+        if login != login_message_incorrect or email != email_message_incorrect:
+            raise AssertionError("В топике register-events-errors: не совпали логин или емайл ")
 
-    if flag_is_ok != 1:
-        raise AssertionError("Сообщение не найдено в топике register-events-errors")
+        if i == 0:
+            assert error_type == 'unknown', f"В register-events-errors на шаге 0: error_type не unknown, step {i}, {error_type}"
+        if i == 1:
+            assert error_type == 'validation', f"В register-events-errors на шаге 1: error_type не validation, step {i}, {error_type}"

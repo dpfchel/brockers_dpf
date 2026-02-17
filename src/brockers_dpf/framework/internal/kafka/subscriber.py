@@ -21,5 +21,16 @@ class Subscriber(ABC):
         try:
             return self._messages.get(timeout=timeout)
         except queue.Empty:
-            raise AssertionError(f"No messages from topic: {self.topic}, within timeout: {timeout}")
+            if timeout < 90:                # для /tests/conftest.py - clear_topic_register_events_errors
+                return None
+            else:
+                AssertionError(f"No messages from topic: {self.topic}, within timeout: {timeout}")
 
+
+    def get_message_find(self, find_str: str = None):
+        assert find_str != None, "Задайте строку для поиска в сообщении"
+        while True:                                                     # когда закончится очередь - упадем по таймауту
+            if find_str != None:
+                message = self.get_message()
+                if find_str in str(message):
+                    return message

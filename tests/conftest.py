@@ -2,7 +2,7 @@ from typing import Generator
 
 import pytest
 
-from brockers_dpf.framework.helpers.kafka.consumers.register_events import RegisterEventsSubscriberError
+from src.brockers_dpf.framework.helpers.kafka.consumers.register_events_errors import RegisterEventsSubscriberError
 from src.brockers_dpf.framework.helpers.kafka.consumers.register_events import RegisterEventsSubscriber
 from src.brockers_dpf.framework.internal.kafka.consumer import Consumer
 from src.brockers_dpf.framework.internal.http.account import AccountApi
@@ -46,3 +46,11 @@ def kafka_consumer(
         register_events_subscriber_error,
     ]) as consumer:
         yield consumer
+
+
+# Вычитаем все сообщения с топика, если timeout<90 get_message вернет None
+@pytest.fixture()
+def clear_topic_register_events_errors(register_events_subscriber_error) -> None:
+    result = 1
+    while result != None:
+        result = register_events_subscriber_error.get_message(timeout=2)
