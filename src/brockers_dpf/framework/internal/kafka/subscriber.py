@@ -24,7 +24,7 @@ class Subscriber(ABC):
             if timeout < 90:                # для /tests/conftest.py - clear_topic_register_events_errors
                 return None
             else:
-                AssertionError(f"No messages from topic: {self.topic}, within timeout: {timeout}")
+                raise AssertionError(f"No messages from topic: {self.topic}, within timeout: {timeout}")
 
 
     def get_message_find(self, find_str: str = None):

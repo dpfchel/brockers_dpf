@@ -4,6 +4,7 @@ import uuid
 import pytest
 import pika
 
+from brockers_dpf.framework.internal.rmq.consumer import ConsumerRmq
 from brockers_dpf.framework.internal.rmq.publisher import RmqPublisher
 from src.brockers_dpf.framework.helpers.kafka.consumers.register_events import RegisterEventsSubscriber
 from src.brockers_dpf.framework.helpers.kafka.consumers.register_events_errors import RegisterEventsSubscriberError
@@ -21,6 +22,12 @@ def register_message() -> dict[str, str]:
         "email": f"{base}@mail.ru",
         "password": "123123123",
     }
+
+
+@pytest.mark.parametrize("i", range(10))
+def test_send_registration(i, account: AccountApi, register_message: dict[str, str],) -> None:
+    account.register_user(**register_message)
+
 
 
 
@@ -288,3 +295,14 @@ def test_rmq_homework3(
         time.sleep(1)
     else:
         raise AssertionError("Email not found")
+
+
+
+
+
+def test_rmq_subscriber():
+    with ConsumerRmq() as consumer:
+        message = consumer.get_message()
+        print(message)
+
+
