@@ -269,10 +269,7 @@ def test_rmq(rmq_publisher: RmqPublisher) -> None:
     #rmq_publisher.publish("dm.mail.sending", message=message)
     print(rmq_publisher)
     rmq_publisher.publish("dm.mail.sending", message)
-    log_file = "/home/dpf/mypyproj/_log/temp_file.txt"
-    with open(log_file, 'a') as file:
-        file.write(" ******** test_rmq *****  ")
-        file.write(' message publish = ' + str(message) + "\n")
+
 
 
 
@@ -289,10 +286,6 @@ def test_rmq_homework3(
         "body":  "Test message",
     }
     rmq_publisher.publish("dm.mail.sending", message)
-    log_file = "/home/dpf/mypyproj/_log/temp_file.txt"
-    with open(log_file, 'a') as file:
-        file.write(" ******** test_rmq_homework3 *****  ")
-        file.write(' message publish = ' + str(message) + "\n")
 
     for _ in range(10):
         response = mail.find_message(query=address)
