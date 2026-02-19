@@ -2,6 +2,7 @@ from typing import Generator
 
 import pytest
 
+from brockers_dpf.framework.helpers.rmq.consumers.dm_mail_sending import DmMailSending
 from src.brockers_dpf.framework.internal.rmq.publisher import RmqPublisher
 from src.brockers_dpf.framework.helpers.kafka.consumers.register_events_errors import RegisterEventsSubscriberError
 from src.brockers_dpf.framework.helpers.kafka.consumers.register_events import RegisterEventsSubscriber
@@ -61,3 +62,10 @@ def clear_topic_register_events_errors(register_events_subscriber_error) -> None
 def rmq_publisher() -> Generator[RmqPublisher]:
     with RmqPublisher() as publisher:
         yield publisher
+
+@pytest.fixture(scope="session", autouse=True)
+def rmq_dm_mail_sending_consumer(
+        register_events_subscriber: RegisterEventsSubscriber,
+) -> Generator[DmMailSending]:
+    with DmMailSending() as consumer:
+        yield consumer

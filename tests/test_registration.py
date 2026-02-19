@@ -4,6 +4,7 @@ import uuid
 import pytest
 import pika
 
+from brockers_dpf.framework.helpers.rmq.consumers.dm_mail_sending import DmMailSending
 from brockers_dpf.framework.internal.rmq.consumer import ConsumerRmq
 from brockers_dpf.framework.internal.rmq.publisher import RmqPublisher
 from src.brockers_dpf.framework.helpers.kafka.consumers.register_events import RegisterEventsSubscriber
@@ -24,9 +25,9 @@ def register_message() -> dict[str, str]:
     }
 
 
-@pytest.mark.parametrize("i", range(10))
-def test_send_registration(i, account: AccountApi, register_message: dict[str, str],) -> None:
-    account.register_user(**register_message)
+#@pytest.mark.parametrize("i", range(10))
+#def test_send_registration(i, account: AccountApi, register_message: dict[str, str],) -> None:
+#    account.register_user(**register_message)
 
 
 
@@ -39,7 +40,6 @@ def test_failed_registration(account: AccountApi, mail: MailApi) -> None:
         if response.json()["total"] > 0:
             raise AssertionError("Email found")
         time.sleep(1)
-
 
 
 def test_success_registration(account: AccountApi, mail: MailApi) -> None:
@@ -165,7 +165,7 @@ def test_invalid_data_to_error_type_validation(
         register_events_subscriber_error: RegisterEventsSubscriberError,
         account: AccountApi,
 ) -> None:
-    """  Задание 2.1
+    """Задание 2.1
     - Запускаем асинхронную регистрацию с невалидными данными через Register API
     - Проверям, что сообщение попало в топик register-events
     - Проверяем, что сообщение попало в топик register-events-error с типом ошибки validation
@@ -205,10 +205,11 @@ def test_invalid_data_with_error_type_unknown_to_error_type_validation(
         account: AccountApi,
         kafka_producer: Producer,
 ) -> None:
-    """ Задание 2.2
-     - Запушить в топик register-events-error  сообщение с ошибкой валидации, но изменить тип на unknown,
-     - проверить, что сообщение повторно попадет в топик  register-events-error , но уже с типом ошибки "validation"
-     - т.е. Принимаем 2 сообщения: первое с типом ошибки "unknown", второе с типом ошибки "validation"
+    """
+    Задание 2.2
+    - Запушить в топик register-events-error  сообщение с ошибкой валидации, но изменить тип на unknown,
+    - проверить, что сообщение повторно попадет в топик  register-events-error , но уже с типом ошибки "validation"
+    - т.е. Принимаем 2 сообщения: первое с типом ошибки "unknown", второе с типом ошибки "validation"
     """
     message_incorrect = {
         'input_data': {
@@ -239,9 +240,7 @@ def test_invalid_data_with_error_type_unknown_to_error_type_validation(
 
     kafka_producer.send("register-events-errors", message_incorrect)
 
-    #topic: "register-events-errors"
-    flag_is_ok = 0
-    case = 0              # количество сообщений с тестовыми логином и емайлом
+    #topic: "register-events-errors
     for i in range(2):
         message_from_topic_error = register_events_subscriber_error.get_message_find(email_message_incorrect)
         message_from_topic_error_value = message_from_topic_error.value
@@ -270,7 +269,10 @@ def test_rmq(rmq_publisher: RmqPublisher) -> None:
     #rmq_publisher.publish("dm.mail.sending", message=message)
     print(rmq_publisher)
     rmq_publisher.publish("dm.mail.sending", message)
-
+    log_file = "/home/dpf/mypyproj/_log/temp_file.txt"
+    with open(log_file, 'a') as file:
+        file.write(" ******** test_rmq *****  ")
+        file.write(' message publish = ' + str(message) + "\n")
 
 
 
@@ -287,6 +289,10 @@ def test_rmq_homework3(
         "body":  "Test message",
     }
     rmq_publisher.publish("dm.mail.sending", message)
+    log_file = "/home/dpf/mypyproj/_log/temp_file.txt"
+    with open(log_file, 'a') as file:
+        file.write(" ******** test_rmq_homework3 *****  ")
+        file.write(' message publish = ' + str(message) + "\n")
 
     for _ in range(10):
         response = mail.find_message(query=address)
@@ -298,11 +304,31 @@ def test_rmq_homework3(
 
 
 
+# 17- 1
+def test_rmq_success_registration_17(
+        rmq_dm_mail_sending_consumer: DmMailSending,
+        register_events_subscriber: RegisterEventsSubscriber,
+        register_message: dict[str, str],
+        account: AccountApi,
+        mail: MailApi,
+        clear_topic_register_events_errors,
+) -> None:
 
+    login = register_message["login"]
+    account.register_user(**register_message)
 
-def test_rmq_subscriber():
-    with ConsumerRmq() as consumer:
-        message = consumer.get_message()
-        print(message)
+    message = register_events_subscriber.get_message()
+    login_from_message = message.value["login"]
+    assert login_from_message == login
 
+    # RMQ
+    rmq_dm_mail_sending_consumer.find_message(login=login)
+
+    for _ in range(10):
+        response = mail.find_message(query=login)
+        if response.json()["total"] > 0:
+            break
+        time.sleep(1)
+    else:
+        raise AssertionError("Email not found")
 

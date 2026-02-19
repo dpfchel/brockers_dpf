@@ -2,6 +2,7 @@ import json
 import threading
 import time
 import queue
+from abc import abstractmethod
 from collections import defaultdict
 
 import pika
@@ -28,7 +29,16 @@ class ConsumerRmq(Singleton):
         self._queue_name: str = ''
 
 
-    def start(self):
+    @property
+    def exchange(self):
+        raise NotImplementedError("Set exchange")
+
+    @property
+    def routing_key(self):
+        raise NotImplementedError("Set routing_key")
+
+
+    def _start(self):
         result = self._channel.queue_declare(
             queue="",
             exclusive=True,             # Очередь будет доступна только для соединения, которое ее создало
@@ -40,8 +50,8 @@ class ConsumerRmq(Singleton):
 
         self._channel.queue_bind(
             queue = self._queue_name,
-            exchange="dm.mail.sending",
-            routing_key = "#"
+            exchange=self.exchange,
+            routing_key = self.routing_key,
         )
 
         self._running.set()
@@ -60,9 +70,7 @@ class ConsumerRmq(Singleton):
         try:
             return self._messages.get(timeout=timeout)
         except queue.Empty:
-            raise AssertionError(f"No messages from: {self._queue_name}, within timeout: {timeout}")
-
-
+            raise AssertionError(f"No messages from: {self._queue_name}, within timeout: {timeout} (rmq consumer.py)")
 
 
 
@@ -85,7 +93,7 @@ class ConsumerRmq(Singleton):
             except Exception as e:
                 print(f'Error while processing message rmq: {e} ')
 
-        self._channel.basic_consume(self._queue_name, on_message_callback)
+        self._channel.basic_consume(self._queue_name, on_message_callback, auto_ack=True)
 
         try:
             while self._running.is_set():
@@ -96,7 +104,7 @@ class ConsumerRmq(Singleton):
 
 
 
-    def stop(self):
+    def _stop(self):
         self._running.clear()
 
         if self._thread and self._thread.is_alive():
@@ -124,10 +132,10 @@ class ConsumerRmq(Singleton):
 
 
     def __enter__(self):
-        self.start()
+        self._start()
         return self
 
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.stop()
+        self._stop()
 
